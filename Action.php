@@ -21,6 +21,16 @@ class JSON_Action extends Typecho_Widget implements Widget_Interface_Do {
     private function defaults() {
         $this->export("Hello World!");
     }
+    private function count() {
+        $select =  $this->db->select("COUNT(*) AS counts")
+            ->from('table.contents')
+            ->where('type = ?', 'post')
+            ->where('status = ?','publish')
+            ->where('created < ?', time());
+        $res = $this->db->fetchRow($select);
+        return $this->export($res);
+
+    }
     //参数 pageSize, page, authorId, created, cid, category, commentsNumMax, commentsNumMin, allowComment
     private function posts() {
         $pageSize = (int) self::GET('pageSize', 5);
@@ -28,7 +38,7 @@ class JSON_Action extends Typecho_Widget implements Widget_Interface_Do {
         $authorId = self::GET('authorId', 0);
         $offset = $pageSize * ( $page - 1 );
         
-        $select = $this->db->select('cid', 'created', 'type', 'slug', 'text')->from('table.contents')
+        $select = $this->db->select('cid', 'title', 'created', 'type', 'slug', 'text')->from('table.contents')
             ->where('type = ?', 'post')
             ->where('status = ?', 'publish')
             ->where('created < ?', time())
@@ -78,9 +88,9 @@ class JSON_Action extends Typecho_Widget implements Widget_Interface_Do {
         $result = array();
         foreach($posts as $post) {
             $post = $this->widget("Widget_Abstract_Contents")->push($post);
-            $posts[] = $post;
+            $result[] = $post;
         }
-        $this->export($posts);
+        $this->export($result);
     }
     //参数 content
     private function pageList() {
@@ -286,6 +296,8 @@ class JSON_Action extends Typecho_Widget implements Widget_Interface_Do {
         
         $result = array();
         foreach($resource as $option) $result[$option['name']] = $option['value'];
+
+
         $this->export($result);
     }
     private function upgrade() {
