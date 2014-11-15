@@ -88,6 +88,10 @@ class JSON_Action extends Typecho_Widget implements Widget_Interface_Do {
         $result = array();
         foreach($posts as $post) {
             $post = $this->widget("Widget_Abstract_Contents")->push($post);
+			$post['tag'] = $this->db->fetchAll($this->db->select('name')->from('table.metas')
+			->join('table.relationships', 'table.metas.mid = table.relationships.mid', Typecho_DB::LEFT_JOIN)
+			->where('table.relationships.cid = ?', $post['cid'])
+			->where('table.metas.type = ?', 'tag'));
             $result[] = $post;
         }
         $this->export($result);
